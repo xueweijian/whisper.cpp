@@ -1,0 +1,41 @@
+name: Build Vulkan CLI
+
+on:
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+
+jobs:
+  build-windows-vulkan:
+    runs-on: windows-latest
+
+    steps:
+      - name: Clone whisper.cpp Repository
+        uses: actions/checkout@v4
+
+      - name: Install Vulkan SDK
+        run: |
+          echo "Installing Vulkan SDK via Chocolatey..."
+          choco install vulkan-sdk --no-progress
+          
+      - name: Configure CMake
+        # Using -DWHISPER_VULKAN=ON to enable GPU acceleration for AMD/NVIDIA via Vulkan
+        run: cmake -B build -DWHISPER_VULKAN=ON
+
+      - name: Build Project
+        run: cmake --build build --config Release
+
+      - name: Package Custom Artifacts
+        run: |
+          mkdir release_package
+          # Rename main.exe to our custom cli-vulkan.exe
+          copy build\bin\Release\main.exe release_package\cli-vulkan.exe
+          
+          # Copy any dynamically linked libraries (like ggml.dll, whisper.dll if present)
+          if (Test-Path build\bin\Release\*.dll) {
+              copy build\bin\Release\*.dll release_package\
+          }
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-vulkan-windows
+          path: release_package/
