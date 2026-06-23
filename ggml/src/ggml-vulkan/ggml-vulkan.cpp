@@ -6588,8 +6588,8 @@ static void ggml_vk_instance_init() {
 
     // See https://github.com/KhronosGroup/Vulkan-Hpp?tab=readme-ov-file#extensions--per-device-function-pointers-
     ggml_vk_default_dispatcher_instance.init(vkGetInstanceProcAddr);
-
-    uint32_t api_version = vk::enumerateInstanceVersion();
+    // HACK: Force Vulkan 1.2 to bypass older AMD driver restrictions
+    uint32_t api_version = VK_API_VERSION_1_2;
 
     if (api_version < VK_API_VERSION_1_2) {
         std::cerr << "ggml_vulkan: Error: Vulkan 1.2 required." << std::endl;
