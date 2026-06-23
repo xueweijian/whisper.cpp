@@ -11,7 +11,11 @@ jobs:
       - name: Install Vulkan SDK
         run: choco install vulkan-sdk --no-progress
       - name: Configure CMake
-        run: cmake -B build -DWHISPER_VULKAN=ON
+        run: |
+          $vulkan_path = (Get-ChildItem C:\VulkanSDK | Select-Object -First 1).FullName
+          $env:VULKAN_SDK = $vulkan_path
+          $env:Path += ";$vulkan_path\Bin"
+          cmake -B build -DWHISPER_VULKAN=ON
       - name: Build
         run: cmake --build build --config Release
       - name: Package
